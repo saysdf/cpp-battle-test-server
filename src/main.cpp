@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	std::cout << "\n\nEnd gameLoop:\n";
 	// return 0;
 	std::cout << "\n\nEvents:\n";
-
+	return 0;
 	EventLog eventLog;
 
 	eventLog.log(1, io::MapCreated{10, 10});
