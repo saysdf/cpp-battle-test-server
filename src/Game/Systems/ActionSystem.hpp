@@ -18,8 +18,8 @@ public:
         });
     }
 
-    void addActionPointsComponent(uint32_t id,std::shared_ptr<ActionPointsComponent> ap) {
-        actionPointsComponent[id] = ap;
+    void addActionPointsComponent(uint32_t unitId,std::shared_ptr<ActionPointsComponent> ap) {
+        actionPointsComponent[unitId] = ap;
     }
 
     template <typename TUnit>

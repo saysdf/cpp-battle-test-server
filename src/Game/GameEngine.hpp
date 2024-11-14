@@ -125,11 +125,12 @@ public:
         eventManager.subscribe<UnitAttacked>([this](UnitAttacked event) {
             eventLog.log(tick, event);
             anythingHappened = true;
-            healthSystem.update();
+            healthSystem.update(event.targetUnitId);
         });
         eventManager.subscribe<UnitDied>([this](UnitDied event) {
-            if (units.count(event.unitId)) {
-                auto unit = units[event.unitId];
+            auto it = units.find(event.unitId);
+            if (it != units.end()) {
+                auto unit = it->second;
                 map->removeUnit(unit);
                 units.erase(event.unitId);
                 orderOfAction.remove(event.unitId);
@@ -173,8 +174,6 @@ public:
             combatSystem.update(order);
             movementSystem.update(order);
         }
-        //проверка умерших не нужна так как система жизней подписана на событие нанесение урона из системы битвы.
-        // healthSystem.update();
     }
 
     void loop() {

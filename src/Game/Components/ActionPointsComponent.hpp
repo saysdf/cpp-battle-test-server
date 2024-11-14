@@ -12,7 +12,6 @@ private:
 public:
     ActionPointsComponent(uint32_t maxActionPoints = 1) : maxActionPoints(maxActionPoints),
                                                           currentActionPoints(0)
-    //TODO добавить интерфейс для юнитов не с 0 экшнпоинтов на старте
     {}
 
     void changeCurrentActionPoints(uint32_t value) { currentActionPoints = value; }

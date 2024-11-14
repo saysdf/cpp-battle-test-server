@@ -29,6 +29,10 @@ public:
         return apCost;
     }
 
+    std::shared_ptr<PositionComponent> getPosition() {
+        return position;
+    }
+
     void setTarget(uint32_t x,uint32_t y) {
         targetX            = x;
         targetY            = y;

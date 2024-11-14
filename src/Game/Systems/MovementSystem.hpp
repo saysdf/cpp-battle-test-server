@@ -53,54 +53,57 @@ public:
     }
 
     void setTarget(uint32_t unitId,int targetX,int targetY) {
-        if (movementComponents.count(unitId) && positionComponents.count(unitId)) {
-            auto& movement = movementComponents[unitId];
+        auto it = movementComponents.find(unitId);
+        if (it != movementComponents.end()) {
+            auto movement = it->second;
             movement->setTarget(targetX, targetY);
         }
     }
 
-    bool performAp(uint32_t id,uint32_t cost) {
-        if (actionPointsComponents.count(id))
-            return actionPointsComponents[id]->doAction(cost);
+    bool performAp(uint32_t unitId,uint32_t cost) {
+        auto it = actionPointsComponents.find(unitId);
+        if (it != actionPointsComponents.end()) {
+            return it->second->doAction(cost);
+        }
         return false;
     }
 
-    void moveUnit(uint32_t unitId) {
-        if (movementComponents.count(unitId) && positionComponents.count(unitId)) {
-            auto& movement = movementComponents[unitId];
-            auto& position = positionComponents[unitId];
+    void moveUnit(uint32_t unitId,std::shared_ptr<MovementComponent> movement) {
+        auto position = movement->getPosition();
+        auto x        = position->x;
+        auto y        = position->y;
 
-            // Проверяем, началось ли движение
-            if (!movement->hasStarted()) {
-                movement->startMovement();
-            }
+        // Проверяем, началось ли движение
+        if (!movement->hasStarted()) {
+            movement->startMovement();
+        }
 
-            // Выполняем движение и публикуем событие UnitMoved тратим АП
-            if (performAp(unitId, movement->getApCost())) {
-                // TODO добавить проверки на летающий не летающий и т.д. что в цвелевой ячейке нет блокирующего юнита (вообще нужно только если у юнитов будут команды или невозможен бой по какой-то причине)
-                uint32_t oldx = position->x;
-                uint32_t oldy = position->y;
-                movement->moveTowardsTarget();
-                //отменяем движение если в место куда хочет прийти юнит уже занято кем-то кто блокирует ячейку. но если сам юнит не блокирующий можно пустить
-                if ((!map->isCellEmpty(position->x, position->y)) && position->isBlocking)
-                    movement->resetMove(oldx, oldy);
-                eventManager.publishEvent(sw::io::UnitMoved{unitId, position->x, position->y,oldx,oldy});
+        // Выполняем движение и публикуем событие UnitMoved тратим АП
+        if (performAp(unitId, movement->getApCost())) {
+            // TODO добавить проверки на летающий не летающий и т.д. что в цвелевой ячейке нет блокирующего юнита (вообще нужно только если у юнитов будут команды или невозможен бой по какой-то причине)
+            uint32_t oldx = x;
+            uint32_t oldy = y;
+            movement->moveTowardsTarget();
+            //отменяем движение если в место куда хочет прийти юнит уже занято кем-то кто блокирует ячейку. но если сам юнит не блокирующий можно пустить
+            if ((!map->isCellEmpty(position->x, position->y)) && position->isBlocking)
+                movement->resetMove(oldx, oldy);
+            eventManager.publishEvent(sw::io::UnitMoved{unitId, x, y, oldx, oldy});
 
 
-                // Проверяем, если цель достигнута, и публикуем событие MarchEnded
-                if (movement->atTarget() && !movement->hasFinished()) {
-                    eventManager.publishEvent(sw::io::MarchEnded{unitId, position->x, position->y});
-                    movement->reachTarget(); // Сбрасываем флаг
-                }
+            // Проверяем, если цель достигнута, и публикуем событие MarchEnded
+            if (movement->atTarget() && !movement->hasFinished()) {
+                eventManager.publishEvent(sw::io::MarchEnded{unitId, x, y});
+                movement->reachTarget(); // Сбрасываем флаг
             }
         }
     }
 
-    void update(uint32_t id) {
-        if (movementComponents.count(id)) {
-            auto movement = movementComponents[id];
+    void update(uint32_t unitId) {
+        auto it = movementComponents.find(unitId);
+        if (it != movementComponents.end()) {
+            auto movement = it->second;
             if (movement->hasNewTarget() && !movement->atTarget()) {
-                moveUnit(id);
+                moveUnit(unitId,movement);
             }
         }
     }
@@ -108,7 +111,7 @@ public:
     void update() {
         for (auto& [id, movement] : movementComponents) {
             if (movement->hasNewTarget() && !movement->atTarget()) {
-                moveUnit(id);
+                moveUnit(id,movement);
             }
         }
     }

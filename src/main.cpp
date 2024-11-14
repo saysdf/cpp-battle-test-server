@@ -45,14 +45,14 @@ int main(int argc, char** argv)
 	// parser.parse(file);
 	//WARNING Старый код не удалял чтобы можно было проверить при желании
 	//
-	std::cout << "\n\nGame engine:\n";
+	std::cout << "Game engine:\n\n";
 	GameEngine engine;
 	engine.processCommands(file);
 	engine.loop();
 	std::cout << "\n\nEnd gameLoop:\n";
-	// return 0;
-	std::cout << "\n\nEvents:\n";
+
 	return 0;
+	std::cout << "\n\nEvents:\n";
 	EventLog eventLog;
 
 	eventLog.log(1, io::MapCreated{10, 10});

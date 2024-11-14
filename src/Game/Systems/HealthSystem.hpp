@@ -31,6 +31,17 @@ public:
         healthComponents.erase(unitId);
     }
 
+    void update(uint32_t unitId) {
+        auto it = healthComponents.find(unitId);
+        if (it != healthComponents.end()) {
+            if (!it->second->isAlive()) {
+                eventManager.publishEvent(sw::io::UnitDied{it->first});
+                it = healthComponents.erase(it); // Remove dead unit from healthComponents
+            } else {
+                ++it;
+            }
+        }
+    }
     void update() {
         for (auto it = healthComponents.begin(); it != healthComponents.end();) {
             if (!it->second->isAlive()) {
